@@ -1,9 +1,9 @@
 {
-    "name": "mapgrid-node-template",
+    "name": "@mapgrid/elements",
     "version": "1.0.0",
-    "main": "dist/mapgrid-node-template.js",
-    "module": "dist/mapgrid-node-template.es.js",
-    "repository": "git@github.com:mapgrid/mapgrid-node-template.git",
+    "main": "dist/mapgrid-elements.js",
+    "module": "dist/mapgrid-elements.es.js",
+    "repository": "git@github.com:mapgrid/elements.git",
     "author": "mapgrid <noreply@mapgrid.org>",
     "license": "MIT",
     "devDependencies": {

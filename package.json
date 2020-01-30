@@ -19,7 +19,7 @@
         "lint": "eslint .",
         "prepublishOnly": "yarn run lint",
         "preversion": "yarn run test",
-        "postversion": "git push && git push --tags",
+        "postversion": "./scripts/push.sh",
         "test": "jest && yarn run lint"
     },
     "files": [

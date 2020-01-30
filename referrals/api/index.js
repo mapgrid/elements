@@ -33,7 +33,7 @@ const handleRequest = async (store, origin, request) => {
                 id,
                 email,
                 referrer,
-                timestamp: Date().toISOString(),
+                timestamp: new Date().toISOString(),
             }),
         )
     }

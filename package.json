@@ -27,7 +27,6 @@
         "analytics/**/*"
     ],
     "dependencies": {
-        "nanoid": "^2.1.10",
         "qs": "^6.9.1",
         "svelte": "^3.18.1",
         "xstate": "^4.7.7"

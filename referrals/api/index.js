@@ -1,6 +1,14 @@
-import nanoid from 'nanoid/generate'
+const hashCode = source => {
+    let hash = 0
 
-const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+    for (let i = 0; i < source.length; i += 1) {
+        const char = source.charCodeAt(i)
+        hash = (hash << 5) - hash + char // eslint-disable-line no-bitwise
+        hash |= 0 // eslint-disable-line no-bitwise
+    }
+
+    return (hash >>> 0).toString(16) // eslint-disable-line no-bitwise
+}
 
 const handleRequest = async (store, origin, request) => {
     const contentType = request.headers.get('content-type')
@@ -13,10 +21,22 @@ const handleRequest = async (store, origin, request) => {
     }
 
     const { email, referrer } = await request.json()
-    const id = nanoid(alphabet, 6)
-    const key = referrer ? `${referrer}:${id}` : id
+    const id = hashCode(email)
 
-    await store.put(key, JSON.stringify({ id, email, referrer }))
+    const existing = await store.get(id)
+
+    if (!existing) {
+        const key = referrer ? `${referrer}:${id}` : id
+        await store.put(
+            key,
+            JSON.stringify({
+                id,
+                email,
+                referrer,
+                timestamp: Date().toISOString(),
+            }),
+        )
+    }
 
     return new Response(JSON.stringify({ id }), {
         status: 200,

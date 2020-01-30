@@ -25,12 +25,14 @@ const handleRequest = async (store, request) => {
     const isNewVisitor = url.searchParams.get('nv')
     const isNewSession = url.searchParams.get('ns')
     const siteTrackingId = url.searchParams.get('sid')
+    const timestamp = new Date().toISOString()
 
     if (siteTrackingId && id) {
         await store.put(
-            `${siteTrackingId}:${new Date().toISOString()}:${id}`,
+            `${siteTrackingId}:${timestamp}:${id}`,
             JSON.stringify({
                 id,
+                timestamp,
                 pathname,
                 hostname,
                 referrer,

@@ -37,7 +37,7 @@ const handleRequest = async (store, origin, request) => {
         )
 
         if (referrer) {
-            await store.put(`${referrer}:referees:${id}`, id)
+            await store.put(`referees:${referrer}:${id}`, id)
         }
     }
 

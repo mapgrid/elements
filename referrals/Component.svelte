@@ -155,13 +155,37 @@
         }
     }
 
-    function handleCopy() {
-        service.send('COPY')
-    }
-
     let linkField
+
     function handleFocus() {
         linkField.setSelectionRange(0, linkField.value.length)
+    }
+
+    function handleCopy() {
+        service.send('COPY')
+
+        if (!navigator.clipboard) {
+            fallbackCopyTextToClipboard(link)
+            return
+        }
+
+        navigator.clipboard.writeText(link)
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+        var textArea = document.createElement('textarea')
+        textArea.value = text
+        textArea.style.position = 'fixed'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+
+        try {
+            document.execCommand('copy')
+        } catch (err) {
+        }
+
+        document.body.removeChild(textArea)
     }
 </script>
 

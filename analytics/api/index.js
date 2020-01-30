@@ -15,7 +15,7 @@ const blob = b64toArray(
     'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
 )
 
-const handleRequest = async (KV, request) => {
+const handleRequest = async (store, request) => {
     const url = new URL(request.url)
     const id = url.searchParams.get('id')
     const pathname = url.searchParams.get('p')
@@ -27,7 +27,7 @@ const handleRequest = async (KV, request) => {
     const siteTrackingId = url.searchParams.get('sid')
 
     if (siteTrackingId && id) {
-        await KV.put(
+        await store.put(
             `${siteTrackingId}:${new Date().toISOString()}:${id}`,
             JSON.stringify({
                 id,
@@ -54,7 +54,9 @@ const handleRequest = async (KV, request) => {
     })
 }
 
-export default KV => event => {
-    const { request } = event
-    event.respondWith(handleRequest(KV, request))
+export default ({ store }) => {
+    addEventListener('fetch', event => {
+        const { request } = event
+        event.respondWith(handleRequest(store, request))
+    })
 }

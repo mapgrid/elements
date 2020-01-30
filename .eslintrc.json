@@ -1,13 +1,15 @@
 {
     "env": {
         "browser": true,
-        "jest": true
+        "jest": true,
+        "worker": true
     },
     "extends": ["airbnb-base", "prettier"],
     "rules": {
         "import/no-extraneous-dependencies": [
             "error",
             { "devDependencies": true }
-        ]
+        ],
+        "no-restricted-globals": 0
     }
 }

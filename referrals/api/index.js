@@ -2,7 +2,7 @@ import nanoid from 'nanoid/generate'
 
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
-const handleRequest = async (store, domain, request) => {
+const handleRequest = async (store, origin, request) => {
     const contentType = request.headers.get('content-type')
 
     if (contentType !== 'application/json') {
@@ -22,7 +22,7 @@ const handleRequest = async (store, domain, request) => {
         status: 200,
         headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': domain,
+            'Access-Control-Allow-Origin': origin,
         },
     })
 }
@@ -49,14 +49,14 @@ function handleOptions(request) {
     })
 }
 
-export default ({ store, domain }) => {
+export default ({ store, origin }) => {
     addEventListener('fetch', event => {
         const { request } = event
 
         if (request.method === 'OPTIONS') {
             event.respondWith(handleOptions(request))
         } else if (request.method === 'POST') {
-            event.respondWith(handleRequest(store, domain, request))
+            event.respondWith(handleRequest(store, origin, request))
         } else {
             event.respondWith(async () => {
                 return new Response(JSON.stringify({}), {

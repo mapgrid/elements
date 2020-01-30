@@ -1,4 +1,5 @@
 <style>
+    /* purgecss start ignore */
     fieldset {
         @apply flex;
     }
@@ -55,6 +56,7 @@
         @apply mt-2;
         max-height: 100px;
     }
+    /* purgecss end ignore */
 </style>
 
 <script>

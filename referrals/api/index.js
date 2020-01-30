@@ -26,9 +26,8 @@ const handleRequest = async (store, origin, request) => {
     const existing = await store.get(id)
 
     if (!existing) {
-        const key = referrer ? `${referrer}:${id}` : id
         await store.put(
-            key,
+            id,
             JSON.stringify({
                 id,
                 email,
@@ -36,6 +35,10 @@ const handleRequest = async (store, origin, request) => {
                 timestamp: new Date().toISOString(),
             }),
         )
+
+        if (referrer) {
+            await store.put(`${referrer}:referees:${id}`, id)
+        }
     }
 
     return new Response(JSON.stringify({ id }), {

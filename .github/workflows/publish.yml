@@ -12,6 +12,10 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - uses: actions/setup-node@v1
+              with:
+                  node-version: '12.x'
+                  registry-url: 'https://registry.npmjs.org'
+                  scope: '@mapgrid'
             - run: yarn install
             - run: yarn version --patch --no-git-tag-version
             - run: yarn publish --access public

@@ -25,10 +25,7 @@ const handlePost = (store, origin) => async request => {
     const contentType = request.headers.get('content-type')
 
     if (contentType !== 'application/json') {
-        return new Response(JSON.stringify({}), {
-            status: '400',
-            statusText: 'Bad Request',
-        })
+        return handle400(origin)
     }
 
     const { email, referrer } = await request.json()
@@ -71,7 +68,8 @@ const handlePost = (store, origin) => async request => {
         }
     }
 
-    return new Response(JSON.stringify({ id, position }), {
+    // eslint-disable-next-line object-shorthand
+    return new Response(JSON.stringify({ id, position: position }), {
         status: 200,
         headers: {
             'Content-Type': 'application/json',

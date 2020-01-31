@@ -62,6 +62,7 @@
 <script>
     import qs from 'qs'
     import { Machine, interpret } from 'xstate'
+    import { onMount } from 'svelte'
     import { fade } from 'svelte/transition'
 
     export let title
@@ -73,54 +74,59 @@
         id: 'signup',
         initial: 'idle',
         states: {
-          idle: {
-            on: {
-              SUBMIT: 'creating',
+            idle: {
+                on: {
+                    SUBMIT: 'creating',
+                    LOAD: 'created',
+                },
             },
-          },
-          creating: {
-            on: {
-              RESOLVE: 'swap',
-              REJECT: 'failure',
+            creating: {
+                on: {
+                    RESOLVE: 'swap',
+                    REJECT: 'failure',
+                },
             },
-          },
-          swap: {
-            after: {
-              400: 'created',
+            swap: {
+                after: {
+                    400: 'created',
+                },
             },
-          },
-          created: {
-            on: {
-              COPY: 'copying',
+            created: {
+                on: {
+                    COPY: 'copying',
+                },
             },
-          },
-          failure: {
-            on: {
-              SUBMIT: 'creating',
-              HIDE: 'idle'
+            failure: {
+                on: {
+                    SUBMIT: 'creating',
+                    HIDE: 'idle',
+                },
+                after: {
+                    5000: 'idle',
+                },
             },
-            after: {
-              5000: 'idle',
-            }
-          },
-          copying: {
-            after: {
-              400: 'created',
-            }
-          },
-        }
+            copying: {
+                after: {
+                    400: 'created',
+                },
+            },
+        },
     })
 
     let state = signupMachine.initialState.value
-    const service = interpret(signupMachine).onTransition(ctx => state = ctx.value)
-    service.start()
+    let service = interpret(signupMachine).onTransition(
+        ctx => (state = ctx.value),
+    )
 
-    const { rf: referrer } = qs.parse(window.location.search, { ignoreQueryPrefix: true })
-
+    let linkField
+    let referrer
     let link
-    let email = ""
+    let email = ''
+    let position
     $: isValid = email.indexOf('@') !== -1
-    $: message = isValid ? "Something went wrong. Check your email and try again." : "Please enter a valid email."
+    $: message = isValid
+        ? 'Something went wrong. Check your email and try again.'
+        : 'Please enter a valid email.'
 
     function handleSubmit() {
         service.send('SUBMIT')
@@ -140,12 +146,22 @@
             .then(res => res.json().then(json => ({ json, ok: res.ok })))
             .then(({ json, ok }) => {
                 if (ok) {
-                    const { id } = json
-                    link = `${url}?rf=${id}`
+                    link = `${url}?rf=${json.id}`
+                    position = json.position
+
+                    localStorage.setItem('referrals', JSON.stringify({
+                        rf: json.id,
+                        email,
+                        position: json.position,
+                    }))
+
                     service.send('RESOLVE')
                 } else {
                     service.send('REJECT')
                 }
+            })
+            .catch(() => {
+                service.send('REJECT')
             })
     }
 
@@ -154,8 +170,6 @@
             service.send('HIDE')
         }
     }
-
-    let linkField
 
     function handleFocus() {
         linkField.setSelectionRange(0, linkField.value.length)
@@ -173,7 +187,7 @@
     }
 
     function fallbackCopyTextToClipboard(text) {
-        var textArea = document.createElement('textarea')
+        const textArea = document.createElement('textarea')
         textArea.value = text
         textArea.style.position = 'fixed'
         document.body.appendChild(textArea)
@@ -182,11 +196,25 @@
 
         try {
             document.execCommand('copy')
-        } catch (err) {
-        }
+        } catch (err) {}
 
         document.body.removeChild(textArea)
     }
+
+    onMount(() => {
+        const stored = JSON.parse(localStorage.getItem('referrals'))
+        const parsed = qs.parse(window.location.search, { ignoreQueryPrefix: true })
+        referrer = parsed.rf
+
+        service.start()
+
+        if (stored) {
+            position = stored.position
+            email = stored.email
+            link = `${url}?rf=${stored.id}`
+            service.send('LOAD')
+        }
+    })
 </script>
 
 {#if state === 'created' || state === 'copying'}

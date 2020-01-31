@@ -21,7 +21,7 @@ const handle400 = origin =>
         },
     })
 
-const handleRequest = (store, origin) => async request => {
+const handlePost = (store, origin) => async request => {
     const contentType = request.headers.get('content-type')
 
     if (contentType !== 'application/json') {
@@ -104,7 +104,7 @@ const handleQuery = (store, origin) => async request => {
     })
 }
 
-function handleOptions(request) {
+const handleOptions = async request => {
     if (
         request.headers.get('Origin') !== null &&
         request.headers.get('Access-Control-Request-Method') !== null &&
@@ -126,15 +126,18 @@ function handleOptions(request) {
     })
 }
 
+const handleRequest = async (store, origin, request) => {
+    const r = new Router()
+    r.post('/', handlePost(store, origin))
+    r.options('/.*', handleOptions)
+    r.get('/', handleQuery(store, origin))
+
+    const resp = await r.route(request)
+    return resp
+}
+
 export default ({ store, origin }) => {
     addEventListener('fetch', event => {
-        const { request } = event
-
-        const r = new Router()
-        r.post('/', handleRequest(store, origin))
-        r.options('/.*', handleOptions)
-        r.get('/', handleQuery(store, origin))
-
-        return r.route(request)
+        event.respondWith(handleRequest(store, origin, event.request))
     })
 }

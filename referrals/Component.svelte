@@ -77,7 +77,7 @@
             idle: {
                 on: {
                     SUBMIT: 'creating',
-                    LOAD: 'created',
+                    LOAD: 'swap',
                 },
             },
             creating: {
@@ -211,7 +211,7 @@
         if (stored) {
             position = stored.position
             email = stored.email
-            link = `${url}?rf=${stored.id}`
+            link = `${url}?rf=${stored.rf}`
             service.send('LOAD')
         }
     })

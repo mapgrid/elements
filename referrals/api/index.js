@@ -32,7 +32,7 @@ const handlePost = (store, origin) => async request => {
     const id = hashCode(email)
 
     let position = 0
-    const existing = await store.get(`referrer:${id}`)
+    const existing = await store.get(`referrer:${id}`, 'json')
 
     if (existing) {
         position = existing.position
@@ -68,8 +68,7 @@ const handlePost = (store, origin) => async request => {
         }
     }
 
-    // eslint-disable-next-line object-shorthand
-    return new Response(JSON.stringify({ id, position: position }), {
+    return new Response(JSON.stringify({ id, position }), {
         status: 200,
         headers: {
             'Content-Type': 'application/json',

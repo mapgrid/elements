@@ -42,19 +42,22 @@
         @apply bg-gray-500;
     }
 
-    .error {
+    .position, .error {
         @apply block mt-0;
-        @apply text-sm font-medium;
-        @apply text-red-500;
+        @apply font-medium;
         max-height: 0;
         transition: max-height 0.15s ease-out;
         transition: margin-top 0.15s ease-out;
         overflow: hidden;
     }
 
-    .error.visible {
+    .position.visible, .error.visible {
         @apply mt-2;
         max-height: 100px;
+    }
+
+    .error {
+        @apply text-sm text-red-500;
     }
     /* purgecss end ignore */
 </style>
@@ -219,8 +222,9 @@
 
 {#if state === 'created' || state === 'copying'}
 <form in:fade>
+    <span class="position visible"><strong>#{position + 1}</strong> your place in line</span>
     <label for="link">
-        Share your unique referral link
+        Share your unique referral link to move up the waitlist!
     </label>
     <fieldset>
         <input

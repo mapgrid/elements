@@ -1,3 +1,5 @@
+import Router from './router'
+
 const hashCode = source => {
     let hash = 0
 
@@ -10,7 +12,16 @@ const hashCode = source => {
     return (hash >>> 0).toString(16) // eslint-disable-line no-bitwise
 }
 
-const handleRequest = async (store, origin, request) => {
+const handle400 = origin =>
+    new Response(JSON.stringify({}), {
+        status: 400,
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': origin,
+        },
+    })
+
+const handleRequest = (store, origin) => async request => {
     const contentType = request.headers.get('content-type')
 
     if (contentType !== 'application/json') {
@@ -23,15 +34,34 @@ const handleRequest = async (store, origin, request) => {
     const { email, referrer } = await request.json()
     const id = hashCode(email)
 
-    const existing = await store.get(id)
+    let position = 0
+    const existing = await store.get(`referrer:${id}`)
 
-    if (!existing) {
+    if (existing) {
+        position = existing.position
+    } else {
+        let cursor = null
+        let listComplete = false
+
+        while (!listComplete) {
+            // eslint-disable-next-line no-await-in-loop
+            const all = await store.list({
+                prefix: `referrer:`,
+                ...(cursor ? { cursor } : {}),
+            })
+
+            listComplete = all.list_complete
+            cursor = all.cursor
+            position += all.keys.length
+        }
+
         await store.put(
-            id,
+            `referrer:${id}`,
             JSON.stringify({
                 id,
                 email,
                 referrer,
+                position,
                 timestamp: new Date().toISOString(),
             }),
         )
@@ -41,7 +71,31 @@ const handleRequest = async (store, origin, request) => {
         }
     }
 
-    return new Response(JSON.stringify({ id }), {
+    return new Response(JSON.stringify({ id, position }), {
+        status: 200,
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': origin,
+        },
+    })
+}
+
+const handleQuery = (store, origin) => async request => {
+    const url = new URL(request.url)
+    const email = url.searchParams.get('email')
+    const id = url.searchParams.get('rf')
+
+    if (hashCode(email) !== id) {
+        return handle400(origin)
+    }
+
+    const existing = await store.get(`referrer:${id}`)
+
+    if (!existing) {
+        return handle400(origin)
+    }
+
+    return new Response(JSON.stringify({ id, position: existing.position }), {
         status: 200,
         headers: {
             'Content-Type': 'application/json',
@@ -76,17 +130,11 @@ export default ({ store, origin }) => {
     addEventListener('fetch', event => {
         const { request } = event
 
-        if (request.method === 'OPTIONS') {
-            event.respondWith(handleOptions(request))
-        } else if (request.method === 'POST') {
-            event.respondWith(handleRequest(store, origin, request))
-        } else {
-            event.respondWith(async () => {
-                return new Response(JSON.stringify({}), {
-                    status: 405,
-                    statusText: 'Method Not Allowed',
-                })
-            })
-        }
+        const r = new Router()
+        r.post('/', handleRequest(store, origin))
+        r.options('/.*', handleOptions)
+        r.get('/', handleQuery(store, origin))
+
+        return r.route(request)
     })
 }

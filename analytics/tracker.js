@@ -74,7 +74,6 @@ function getData() {
     try {
         data = JSON.parse(data)
     } catch (e) {
-        console.error(e)
         return newVisitorData()
     }
 

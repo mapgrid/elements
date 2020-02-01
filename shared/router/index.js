@@ -86,11 +86,11 @@ class Router {
             return route.handler(req)
         }
 
-        return new Response('Not Found', {
+        return new Response(JSON.stringify({}), {
             status: 404,
             statusText: 'Not Found',
             headers: {
-                'content-type': 'text/plain',
+                'content-type': 'application/javascript',
             },
         })
     }
@@ -101,7 +101,10 @@ class Router {
      */
     resolve(req) {
         return this.routes.find(r => {
-            if (!r.conditions || (Array.isArray(r) && !r.conditions.length)) {
+            if (
+                !r.conditions ||
+                (Array.isArray(r.conditions) && !r.conditions.length)
+            ) {
                 return true
             }
 

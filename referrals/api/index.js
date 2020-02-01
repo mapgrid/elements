@@ -1,4 +1,5 @@
-import Router from './router'
+import Router from '../../shared/router'
+import CORS from '../../shared/cors'
 
 const hashCode = source => {
     let hash = 0
@@ -12,23 +13,27 @@ const hashCode = source => {
     return (hash >>> 0).toString(16) // eslint-disable-line no-bitwise
 }
 
-const handle400 = origin =>
+const handle400 = () =>
     new Response(JSON.stringify({}), {
         status: 400,
         headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': origin,
         },
     })
 
-const handlePost = (store, origin) => async request => {
+const handlePost = store => async request => {
     const contentType = request.headers.get('content-type')
 
     if (contentType !== 'application/json') {
-        return handle400(origin)
+        return handle400()
     }
 
-    const { email, referrer } = await request.json()
+    const { email, referrer } = await request.json().catch(() => ({}))
+
+    if (!email) {
+        return handle400()
+    }
+
     const id = hashCode(email)
 
     let position = 0
@@ -72,69 +77,59 @@ const handlePost = (store, origin) => async request => {
         status: 200,
         headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': origin,
         },
     })
 }
 
-const handleQuery = (store, origin) => async request => {
+const handleQuery = store => async request => {
     const url = new URL(request.url)
     const email = url.searchParams.get('email')
     const id = url.searchParams.get('rf')
 
-    if (hashCode(email) !== id) {
-        return handle400(origin)
+    if (!email || !id) {
+        return handle400()
     }
 
-    const existing = await store.get(`referrer:${id}`)
+    if (hashCode(email) !== id) {
+        return handle400()
+    }
+
+    const existing = await store.get(`referrer:${id}`, 'json')
 
     if (!existing) {
-        return handle400(origin)
+        return handle400()
     }
 
     return new Response(JSON.stringify({ id, position: existing.position }), {
         status: 200,
         headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': origin,
-        },
-    })
-}
-
-const handleOptions = async request => {
-    if (
-        request.headers.get('Origin') !== null &&
-        request.headers.get('Access-Control-Request-Method') !== null &&
-        request.headers.get('Access-Control-Request-Headers') !== null
-    ) {
-        return new Response(null, {
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type',
-            },
-        })
-    }
-
-    return new Response(null, {
-        headers: {
-            Allow: 'POST, OPTIONS',
         },
     })
 }
 
 const handleRequest = async (store, origin, request) => {
-    const r = new Router()
-    r.post('/', handlePost(store, origin))
-    r.options('/.*', handleOptions)
-    r.get('/', handleQuery(store, origin))
+    const r = CORS(new Router(), {
+        origin,
+        methods: ['POST', 'OPTIONS'],
+        allowHeaders: ['Content-Type'],
+    })
+
+    r.post('/', handlePost(store))
+    r.get('/', handleQuery(store))
 
     const resp = await r.route(request)
     return resp
 }
 
+const createListener = (store, origin) => event => {
+    event.respondWith(handleRequest(store, origin, event.request))
+}
+
 export default ({ store, origin }) => {
-    addEventListener('fetch', event => {
-        event.respondWith(handleRequest(store, origin, event.request))
-    })
+    const listener = createListener(store, origin)
+    addEventListener('fetch', listener)
+    return () => {
+        removeEventListener('fetch', listener)
+    }
 }

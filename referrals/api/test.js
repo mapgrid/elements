@@ -480,6 +480,51 @@ test('handle non-existing email', done => {
     cleanup()
 })
 
+test('handle referees count', done => {
+    const cleanup = createReferrals({
+        store: new Store([
+            {
+                key: 'referrer:ac34084f',
+                value: JSON.stringify({
+                    email: 'test@example.com',
+                    position: 0,
+                }),
+            },
+            { key: 'referees:ac34084f:a', value: 'a' },
+            { key: 'referees:ac34084f:b', value: 'b' },
+            { key: 'referees:ac34084f:c', value: 'c' },
+            { key: 'referees:ac34084f:d', value: 'd' },
+            { key: 'referees:ac34084f:e', value: 'e' },
+            { key: 'referees:ac34084f:f', value: 'f' },
+            { key: 'referees:ac34084f:g', value: 'g' },
+            { key: 'referees:ac34084f:h', value: 'h' },
+        ]),
+        origin: 'test',
+    })
+
+    const request = new Request(
+        'http://test/?rf=ac34084f&email=test@example.com',
+    )
+
+    const event = mockEvent(request, async e => {
+        const res = await e
+        const json = await res.json()
+
+        expect(res.ok).toBe(true)
+        expect(res.headers.get('Access-Control-Allow-Origin')).toBe('test')
+        expect(json).toMatchObject({
+            id: 'ac34084f',
+            position: 0,
+            referrals: 8,
+        })
+
+        done()
+    })
+
+    dispatchEvent(event)
+    cleanup()
+})
+
 test('handles options', done => {
     const cleanup = createReferrals({
         store: new Store(),

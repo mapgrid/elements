@@ -100,12 +100,35 @@ const handleQuery = store => async request => {
         return handle400()
     }
 
-    return new Response(JSON.stringify({ id, position: existing.position }), {
-        status: 200,
-        headers: {
-            'Content-Type': 'application/json',
+    let cursor = null
+    let listComplete = false
+    let referrals = 0
+
+    while (!listComplete) {
+        // eslint-disable-next-line no-await-in-loop
+        const all = await store.list({
+            prefix: `referees:${id}:`,
+            ...(cursor ? { cursor } : {}),
+        })
+
+        listComplete = all.list_complete
+        cursor = all.cursor
+        referrals += all.keys.length
+    }
+
+    return new Response(
+        JSON.stringify({
+            id,
+            position: existing.position,
+            referrals,
+        }),
+        {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json',
+            },
         },
-    })
+    )
 }
 
 const handleRequest = async (store, origin, request) => {

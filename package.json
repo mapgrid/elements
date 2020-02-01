@@ -29,7 +29,10 @@
     },
     "files": [
         "referrals/**/*",
-        "analytics/**/*"
+        "analytics/**/*",
+        "shared/**/*",
+        "contact/**/*",
+        "subscription/**/*"
     ],
     "dependencies": {
         "qs": "^6.9.1",

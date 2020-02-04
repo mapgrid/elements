@@ -91,6 +91,11 @@ class Tracker {
     }
 
     trackPageview(_path, vars = {}) {
+        // Support compiling on server
+        if (typeof window === 'undefined') {
+            return
+        }
+
         // Respect "Do Not Track" requests
         if ('doNotTrack' in navigator && navigator.doNotTrack === '1') {
             return

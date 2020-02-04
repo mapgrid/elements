@@ -31,10 +31,11 @@
         "referrals/**/*",
         "analytics/**/*",
         "shared/**/*",
-        "contact/**/*",
+        "submissions/**/*",
         "subscription/**/*"
     ],
     "dependencies": {
+        "nanoid": "^2.1.11",
         "qs": "^6.9.1",
         "svelte": "^3.18.1",
         "xstate": "^4.7.8"

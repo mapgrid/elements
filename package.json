@@ -1,6 +1,6 @@
 {
     "name": "@mapgrid/elements",
-    "version": "0.0.44",
+    "version": "0.0.45",
     "repository": "git@github.com:mapgrid/elements.git",
     "author": "mapgrid <noreply@mapgrid.org>",
     "license": "MIT",

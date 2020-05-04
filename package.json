@@ -37,7 +37,7 @@
     "dependencies": {
         "nanoid": "^3.1.4",
         "qs": "^6.9.4",
-        "svelte": "^3.22.1",
+        "svelte": "^3.22.2",
         "xstate": "^4.9.1"
     }
 }

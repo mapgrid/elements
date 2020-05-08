@@ -35,7 +35,7 @@
         "subscription/**/*"
     ],
     "dependencies": {
-        "nanoid": "^3.1.5",
+        "nanoid": "^3.1.6",
         "qs": "^6.9.4",
         "svelte": "^3.22.2",
         "xstate": "^4.9.1"

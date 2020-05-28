@@ -15,7 +15,7 @@
         "jest": "^26.0.1",
         "lodash": "^4.17.15",
         "prettier": "^2.0.5",
-        "rollup": "^2.11.0",
+        "rollup": "^2.11.2",
         "rollup-plugin-terser": "^6.1.0",
         "whatwg-fetch": "^3.0.0"
     },

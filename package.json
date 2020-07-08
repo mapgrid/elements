@@ -17,7 +17,7 @@
         "prettier": "^2.0.5",
         "rollup": "^2.21.0",
         "rollup-plugin-terser": "^6.1.0",
-        "whatwg-fetch": "^3.1.0"
+        "whatwg-fetch": "^3.1.1"
     },
     "scripts": {
         "format": "prettier --write \"**/*.js\" \"**/*.json\"",
